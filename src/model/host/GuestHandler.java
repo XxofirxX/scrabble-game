@@ -14,14 +14,14 @@ public class GuestHandler implements ClientHandler {
     HashMap<String, Function<String , String>> functions = new HashMap<>();
     PrintWriter out;
 
-    public GuestHandler(String ip, Integer port){
-        functions.put("C", text -> sendToServer(ip,port,"C" + text));
+    public GuestHandler(Integer port){
+        functions.put("C", text -> sendToServer(port,"C" + text));
         functions.put("P", text -> {
             String[] values = text.split(",");
             Word word = new Word(stringToTiles(values[0]),Integer.parseInt(values[1]),Integer.parseInt(values[2]), Boolean.parseBoolean(values[3]));
             if (!Board.getBoard().boardLegal(word)){
                 return "not board legal";
-            } else if (!Boolean.parseBoolean(sendToServer(ip,port,"Q"+values[0]))) {
+            } else if (!Boolean.parseBoolean(sendToServer(port,"Q"+values[0]))) {
                 return "not board query";
             }
             else{
@@ -29,10 +29,10 @@ public class GuestHandler implements ClientHandler {
             }
         });
     }
-    private String sendToServer(String ip, Integer port, String word){
+    private String sendToServer(Integer port, String word){
         Socket theServer = null;
         try {
-            theServer = new Socket(ip, port);
+            theServer = new Socket("localhost", port);
             BufferedReader serverInput=new BufferedReader(new InputStreamReader(theServer.getInputStream()));
             PrintWriter outToServer=new PrintWriter(theServer.getOutputStream());
             outToServer.println(word);
