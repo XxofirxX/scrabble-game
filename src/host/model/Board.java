@@ -1,4 +1,4 @@
-package test;
+package host.model;
 
 import java.util.ArrayList;
 
