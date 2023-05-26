@@ -22,7 +22,7 @@ public class GuestHandler implements ClientHandler {
             String[] values = word.split(",");
             Word word1 = new Word(stringToTiles(values[0]),Integer.parseInt(values[1]),Integer.parseInt(values[2]), Boolean.parseBoolean(values[3]));
             if (!checkBoardValidation(word1)){return "not board legal";}
-            else if (!checkDictionaryValidation(word,books)) {return "not board query";}
+            else if (!checkDictionaryValidation(word,books)) {return "not dictionary legal";}
             return "legal";
         });
     }
