@@ -28,7 +28,6 @@ public class GuestHandler extends Thread implements ClientHandler {
             else if (!checkDictionaryValidation(word,books)) {return "not dictionary legal";}
             return "true";
         });
-
     }
 
     private Tile[] stringToTiles(String tiles){
@@ -61,25 +60,49 @@ public class GuestHandler extends Thread implements ClientHandler {
     public void close() {
         try {inFromClient.close();outToClient.close();} catch (IOException ignored) {}
     }
+    private void getRoundOfGuest(Guest_Host guestHost){
+        String returnFromClient = "";
+        String valueInFromClient;
+        while (!returnFromClient.equals("true")){
+            guestHost.sendToGuest("your turn");
+            valueInFromClient = guestHost.getFromGuest();
+            if(valueInFromClient.equals("disconnect")){break;}
+            Character action = valueInFromClient.charAt(0);
+            valueInFromClient = valueInFromClient.substring(1);
+            String[] books = new String[2]; //TODO fix where books come from
+            returnFromClient = functions.get(action).apply(valueInFromClient, books);
+            guestHost.sendToGuest(returnFromClient);
+        }
+    }
+    private String TilesArrToString(Tile[][] tiles){
+        StringBuilder tilesArr = new StringBuilder();
+        for (int i = 0; i < tiles.length ;i++) {
+            for (int j = 0; j < tiles[i].length; j++) {
+                if(tiles[i][j] != null){
+                    tilesArr.append("row:").append(i).append(",col:").append(j).append(",val:").append(tiles[i][j]).append(";");
+                    //value for each part => row:0,col:0,val:h;
+                    //can be split by ';' to each part in matrix
+                    //can be split by ',' to each val in the part in matrix
+                }
+            }
+        }
+        return tilesArr.toString();
+    }
     @Override
     public void run(){
         int name = server.addGuest(this);
-        String valueInFromClient = "";
+        String valueInFromClient ;
         Guest_Host guestHost = new Guest_Host(inFromClient, outToClient);
-        while (!valueInFromClient.equals("disconnect")) {
-            String returnFromClient = "";
-            while (!returnFromClient.equals("true") && server.turnGuests.get() == name){
-                guestHost.sendToGuest("your turn");
-                valueInFromClient = guestHost.getFromGuest();
-                if(valueInFromClient.equals("disconnect")){break;}
-                Character action = valueInFromClient.charAt(0);
-                valueInFromClient = valueInFromClient.substring(1);
-                String[] books = new String[2]; //TODO fix where books come from
-                returnFromClient = functions.get(action).apply(valueInFromClient, books);
-                guestHost.sendToGuest(returnFromClient);
+        while (true) {
+            valueInFromClient = guestHost.getFromGuest();
+            if(valueInFromClient.equals("disconnect")){break;}
+            if(valueInFromClient.equals("update board")){guestHost.sendToGuest(TilesArrToString(Board.getBoard().getTiles())); continue;}
+            if(server.turnGuests.get() == name){
+                try {
+                    new Thread(() -> getRoundOfGuest(guestHost)).join();
+                } catch (InterruptedException ignored) {}
+                server.nextTurn();
             }
-            if(server.turnGuests.get() == name){server.nextTurn();}
-            else{try {server.turnGuests.wait();} catch (InterruptedException ignored) {}}
         }
     }
 
