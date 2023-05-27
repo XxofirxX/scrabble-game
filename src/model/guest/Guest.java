@@ -31,15 +31,17 @@ public class Guest implements Player {
         return finalWord;
     }
     @Override
-    public void placement(Word word) {
+    public Boolean placement(Word word) {
         String finalWord=convertString(word);
         outToServer.println("P"+finalWord+","+word.getRow()+","+word.getCol()+","+word.isVertical());
+        return true;
     }
 
     @Override
-    public void challenge(Word word) {
+    public Boolean challenge(Word word) {
         String finalWord=convertString(word);
         outToServer.println("C"+finalWord);
+        return true;
     }
 
     public void close() {
