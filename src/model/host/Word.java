@@ -1,4 +1,4 @@
-package host.model;
+package model.host;
 
 import java.util.Arrays;
 import java.util.Objects;

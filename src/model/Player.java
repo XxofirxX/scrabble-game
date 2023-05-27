@@ -1,6 +1,9 @@
 package model;
 
+import model.host.Tile;
+import model.host.Word;
+
 public interface Player {
-    Boolean placement(String word);
-    void challenge(String word);
+    void placement(Word word);
+    void challenge(Word word);
 }
