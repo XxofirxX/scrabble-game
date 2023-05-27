@@ -1,22 +1,43 @@
-package server;
+package model.host;
 
+import server.ClientHandler;
+import server.ServerPolicy;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class MyServer implements ServerPolicy{
+public class GuestSever implements ServerPolicy {
     private final int port;
-    private final ClientHandler  clientHandler;
+    private final GuestHandler clientHandler;
     private volatile boolean run;
+    private final HashMap<Integer,ClientHandler> guests;
+    public volatile AtomicInteger turnGuests = new AtomicInteger();
 
-    public MyServer(int port, ClientHandler clientHandler) {
+    public GuestSever(int port, GuestHandler clientHandler) {
+        turnGuests.set(0);
         this.port = port;
         this.clientHandler = clientHandler;
+        clientHandler.setServer(this);
         this.run = true;
+        guests = new HashMap<>();
     }
-
+    public void nextTurn(){
+        turnGuests.addAndGet(1);
+        if (turnGuests.get() > guests.size()){
+            turnGuests.set(1);
+        }
+        turnGuests.notifyAll();
+    }
+    public int addGuest(GuestHandler guest){
+        guests.put(guests.values().size() + 2,guest);
+        return guests.values().size() + 1;
+    }
     private void runServer() throws IOException {
         ServerSocket myServer = new ServerSocket(port);
         myServer.setSoTimeout(1000);
@@ -27,7 +48,6 @@ public class MyServer implements ServerPolicy{
                     aClient = myServer.accept();
                     try {
                         clientHandler.handleClient(aClient.getInputStream(), aClient.getOutputStream());
-                        clientHandler.close();
                     } catch (IOException ignored) {
                     }
                 } catch (SocketTimeoutException ignored) {
