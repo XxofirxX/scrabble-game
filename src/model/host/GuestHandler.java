@@ -104,6 +104,7 @@ public class GuestHandler extends Thread implements ClientHandler {
                 server.nextTurn();
             }
         }
+        guestHost.close();
     }
 
 }
