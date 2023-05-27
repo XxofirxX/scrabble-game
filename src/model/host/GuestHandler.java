@@ -1,5 +1,6 @@
 package model.host;
 
+import server.Books;
 import server.ClientHandler;
 import server.ServerDictionary;
 
@@ -69,7 +70,7 @@ public class GuestHandler extends Thread implements ClientHandler {
             if(valueInFromClient.equals("disconnect")){break;}
             Character action = valueInFromClient.charAt(0);
             valueInFromClient = valueInFromClient.substring(1);
-            String[] books = new String[2]; //TODO fix where books come from
+            String[] books = Books.getBooksClass().getBooks();
             returnFromClient = functions.get(action).apply(valueInFromClient, books);
             guestHost.sendToGuest(returnFromClient);
         }
