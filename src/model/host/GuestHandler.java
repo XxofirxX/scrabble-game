@@ -67,7 +67,6 @@ public class GuestHandler extends Thread implements ClientHandler {
         while (!returnFromClient.equals("true")){
             guestHost.sendToGuest("your turn");
             valueInFromClient = guestHost.getFromGuest();
-            if(valueInFromClient.equals("disconnect")){break;}
             Character action = valueInFromClient.charAt(0);
             valueInFromClient = valueInFromClient.substring(1);
             String[] books = Books.getBooksClass().getBooks();
@@ -92,15 +91,25 @@ public class GuestHandler extends Thread implements ClientHandler {
     @Override
     public void run(){
         int name = server.addGuest(this);
-        String valueInFromClient ;
         Guest_Host guestHost = new Guest_Host(inFromClient, outToClient);
+        Thread clientRequest = new Thread(() -> {
+           while (true){
+               String valueInFromClient;
+               if(server.turnGuests.get() != name){
+                   valueInFromClient = guestHost.getFromGuest();
+                   if(valueInFromClient.equals("disconnect")){break;}
+                   if(valueInFromClient.equals("update board")){guestHost.sendToGuest(TilesArrToString(Board.getBoard().getTiles()));}
+               }
+           }
+        });
+        clientRequest.start();
         while (true) {
-            valueInFromClient = guestHost.getFromGuest();
-            if(valueInFromClient.equals("disconnect")){break;}
-            if(valueInFromClient.equals("update board")){guestHost.sendToGuest(TilesArrToString(Board.getBoard().getTiles())); continue;}
+            if(!clientRequest.isAlive()){break;}
             if(server.turnGuests.get() == name){
                 try {
-                    new Thread(() -> getRoundOfGuest(guestHost)).join();
+                    Thread a = new Thread(() -> getRoundOfGuest(guestHost));
+                    a.start();
+                    a.join();
                 } catch (InterruptedException ignored) {}
                 server.nextTurn();
             }
