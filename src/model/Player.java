@@ -4,6 +4,6 @@ import model.host.Tile;
 import model.host.Word;
 
 public interface Player {
-    void placement(Word word);
-    void challenge(Word word);
+    Boolean placement(Word word);
+    Boolean challenge(Word word);
 }
