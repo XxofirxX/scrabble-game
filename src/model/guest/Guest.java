@@ -1,5 +1,6 @@
 package model.guest;
 import model.Player;
+import model.host.Board;
 import model.host.Tile;
 import model.host.Word;
 
@@ -42,6 +43,21 @@ public class Guest implements Player {
         String finalWord=convertString(word);
         outToServer.println("C"+finalWord);
         return true;
+    }
+
+    @Override
+    public String updateBoard() {
+        outToServer.println("update board");
+        try {
+            return serverInput.readLine();
+        } catch (IOException ignored) {}
+        return null;
+    }
+
+    @Override
+    public void disconnect() {
+        outToServer.println("disconnect");
+        close();
     }
 
     public void close() {
